@@ -3,7 +3,10 @@
 
 This is modified from the original version to work with Raspbian Stretch and to simulate the either the Google or Xfinity captured portal WiFi Access Point and login screen. 
 
-See https://braindead-security.blogspot.com/2017/06/building-rogue-captive-portal-for.html
+[CaptivePortal.pdf](/CaptivePortal.pdf)
+
+
+See also https://braindead-security.blogspot.com/2017/06/building-rogue-captive-portal-for.html
 
 ## Features 
 - Uses Raspberry Pi Zero W
@@ -21,13 +24,10 @@ It was designed to demonstrate the simplicity of offline credential grabbing and
 
 You select which type portal you want during installation. You can change by rerunning the install.sh script and then rebooting.
 
-See the CaptivePortal.PDF document for details on this hardware and software addition.
-
-[CaptivePortal.pdf](/CaptivePortal.pdf)
-
+See the [CaptivePortal.pdf](/CaptivePortal.pdf) document for details on this hardware and software addition.
 
 ## INSTALLATION
-Installation after a fresh install of Rasbian Stretch Lite:
+Using a fresh install of Rasbian Stretch Lite:
 ```
 sudo apt-get install git
 git clone https://github.com/rgrokett/rogue-captive
