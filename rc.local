@@ -18,4 +18,11 @@ iptables -t nat -A PREROUTING -i br0 -p tcp -m tcp --dport 80 -j DNAT --to-desti
 iptables -t nat -A PREROUTING -i br0 -p tcp -m tcp --dport 443 -j DNAT --to-destination 10.1.1.1:80
 iptables -t nat -A POSTROUTING -j MASQUERADE
 service dnsmasq start
+
+# Shutdown Button
+/usr/local/bin/shutdown-btn.py &
+
+# Status OLED Display
+/usr/local/bin/status.py &
+
 exit 0
