@@ -15,6 +15,8 @@ See also https://braindead-security.blogspot.com/2017/06/building-rogue-captive-
 - Supports OLED Display
 - Selectable portal: Google or Xfinity simulations
 - Capture credentials
+- Display count of unique client connections
+- Logs data 
 - Push button graceful Shutdown 
 
 ## DETAILS
@@ -26,7 +28,10 @@ You select which type portal you want during installation. You can change by rer
 
 Once active, you can still SSH into the Pi using Putty or ssh by connecting to the pi@10.1.1.1 via WiFi (you don't need to "sign in", just close your browser.)
 
+Collected data in JSON format is logged to http://10.1.1.1/data.txt 
+
 See the [CaptivePortal.pdf](/CaptivePortal.pdf) document for details on this hardware and software addition.
+
 
 ## BASIC INSTALLATION
 Using a fresh install of Rasbian Stretch Lite:

