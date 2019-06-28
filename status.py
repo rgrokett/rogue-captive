@@ -86,7 +86,7 @@ def get_MAC():
 # CLIENT NAME
 def get_NAME(mac):
     if DEBUG:
-      print ("get_NAME("+str(mac)+")") 
+      print(("get_NAME("+str(mac)+")")) 
     if (mac == ""):
       mac = "NONE"
     cmd = "grep -m1 "+str(mac)+" /var/lib/misc/dnsmasq.leases |cut -d' ' -f4"
@@ -97,7 +97,7 @@ def get_NAME(mac):
 # CLIENT IP
 def get_IP(mac):
     if DEBUG:
-      print ("get_IP("+str(mac)+")") 
+      print(("get_IP("+str(mac)+")")) 
     if (mac == ""):
       mac = "NONE"
     cmd = "grep -m1 "+str(mac)+" /var/lib/misc/dnsmasq.leases |cut -d' ' -f3"
@@ -108,7 +108,7 @@ def get_IP(mac):
 # USER CREDS
 def get_USER(ip):
     if DEBUG:
-      print ("get_USER("+str(ip)+")") 
+      print(("get_USER("+str(ip)+")")) 
     if (ip == ""):
       ip = "NONE"
     cmd = "tail -1 /var/www/html/creds.txt|grep "+str(ip)+"|cut -d'|' -f3"
@@ -119,7 +119,7 @@ def get_USER(ip):
 # WRITE TO FILE
 def write_file(outfile, data):
     if DEBUG:
-      print "write_file()"+str(outfile)
+      print("write_file()"+str(outfile))
     f = open(outfile,'a')
     f.write(json.dumps(data))
     f.close()
