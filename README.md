@@ -1,6 +1,7 @@
 # Rogue captive portal for Raspberry Pi
 # For simulating Google and Xfinity login screens
 
+
 This is modified from the original version to work with Raspbian Stretch and to simulate the either the Google or Xfinity captured portal WiFi Access Point and login screen. 
 
 Detailed Documentation: [CaptivePortal.pdf](/CaptivePortal.pdf)
